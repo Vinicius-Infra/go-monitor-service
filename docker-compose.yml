@@ -1,0 +1,6 @@
+services:
+  go-monitor:
+    build: .
+    container_name: go_monitor_container
+    restart: always
+    network_mode: "host" # Isso permite que o Go continue vendo o 'localhost' do seu Windows
