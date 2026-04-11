@@ -1,30 +1,70 @@
 package main
 
 import (
-	"database/sql" // Ferramenta para falar com bancos SQL
-	"fmt"          // Ferramenta para escrever mensagens
-	"log"          // Ferramenta para registrar erros
-	_ "github.com/lib/pq" // O "driver" do Postgres (o _ significa que usamos ele quietinho no fundo)
+	"database/sql"
+	"fmt"
+	"time" // Nova peça: serve para o robô esperar um pouco entre as rondas
+	_ "github.com/lib/pq"
 )
 
-func main() {
-	// 1. A nossa "frase mágica" de conexão (Igual a que usamos no application.properties)
-	// host, port, user, password, dbname e sslmode
-	connStr := "host=localhost port=5433 user=postgres password=postgres dbname=microservicesdb sslmode=disable"
+func checkDatabase(serviceName string, port int) {
+	// 1. Definimos variáveis vazias
+	var user, password, dbname string
 
-	// 2. O Go tenta abrir a porta do banco
+	// 2. Escolhemos os dados certos baseados na porta
+	if port == 5433 {
+		user = "postgres"
+		password = "postgres"
+		dbname = "microservicesdb"
+	} else {
+		// DADOS DA KOTLIN (Baseado no seu application.yml)
+		user = "demo"
+		password = "demo123"
+		dbname = "demo_db"
+	}
+
+	// 3. Montamos a string de conexão com os dados corretos
+	connStr := fmt.Sprintf("host=localhost port=%d user=%s password=%s dbname=%s sslmode=disable", 
+		port, user, password, dbname)
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal("Erro ao configurar o banco: ", err)
+		fmt.Printf("❌ [%s] Erro de config: %v\n", serviceName, err)
+		return
 	}
-	defer db.Close() // Isso garante que a porta feche quando terminarmos (boa educação!)
+	defer db.Close()
 
-	// 3. O PING: É aqui que o Vigia pergunta: "Tem alguém aí?"
 	err = db.Ping()
 	if err != nil {
-		fmt.Println("❌ A API Java está fora do ar ou o banco está desligado!")
-		log.Fatal(err)
+		fmt.Printf("❌ [%s] OFFLINE (Porta %d) - Erro: %v\n", serviceName, port, err)
+	} else {
+		fmt.Printf("✅ [%s] ONLINE (Porta %d)\n", serviceName, port)
 	}
+}
 
-	fmt.Println("✅ Sucesso! O monitor Go conseguiu falar com o banco da API Java na porta 5433.")
+// Função auxiliar para saber qual banco conectar baseado na porta
+func getDBName(port int) string {
+	if port == 5433 {
+		return "microservicesdb" // Banco da Java
+	}
+	return "demo_db" // Banco da Kotlin
+}
+
+func main() {
+	fmt.Println("🚀 Iniciando Monitor de Infraestrutura (Go)...")
+	fmt.Println("----------------------------------------------")
+
+	// Criamos um loop infinito (o vigia nunca dorme!)
+	for {
+		// Checa o banco da Java
+		checkDatabase("API JAVA (Audit)", 5433)
+
+		// Checa o banco da Kotlin
+		checkDatabase("API KOTLIN (User)", 5434)
+
+		fmt.Println("----------------------------------------------")
+		
+		// Espera 10 segundos antes da próxima ronda
+		time.Sleep(10 * time.Second)
+	}
 }
