@@ -1,0 +1,11 @@
+# Executáveis
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# IDEs
+.idea/
+.vscode/
