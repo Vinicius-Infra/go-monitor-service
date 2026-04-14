@@ -1,6 +1,6 @@
-# 🚀 GoLang Microservice - [Nome do Serviço]
+# 🚀 GoLang Microservice - [Go-Monitor-Service]
 
-Este microsserviço faz parte de um ecossistema distribuído, focado em alta performance e baixa latência.
+Este microsserviço é responsável por monitorar a saúde e as métricas de performance do ecossistema de microsserviços, integrando-se via Apache Kafka para coletar eventos de auditoria em tempo real.
 
 ## 🛠️ Tecnologias
 - **GoLang** (1.21+)
@@ -19,19 +19,6 @@ Este serviço consome/produz eventos para o tópico `audit-log-topic` no Apache 
 3. Execute: 
 go run main.go
 
----
-
-### 2. Atualização: README da API Kotlin (Producer)
-Você deve remover as referências ao RabbitMQ e adicionar a nova responsabilidade de produção de eventos Kafka.
-
-```markdown
-## 📡 Integração com Kafka (Novo)
-A API agora atua como um **Producer**. 
-Toda vez que um usuário é criado/atualizado, um evento é disparado para o tópico `audit-log-topic`.
-
-**Configuração principal:**
-- Broker: `localhost:9092`
-- Tópico: `audit-log-topic`
 
 
 
