@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time" // Nova peça: serve para o robô esperar um pouco entre as rondas
 	_ "github.com/lib/pq"
+	"net/http"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func checkDatabase(serviceName string, port int) {
@@ -66,5 +68,11 @@ func main() {
 		
 		// Espera 10 segundos antes da próxima ronda
 		time.Sleep(10 * time.Second)
+
+		// Rota padrão do Prometheus
+    http.Handle("/metrics", promhttp.Handler())
+    
+    // Inicia o servidor na porta 8081
+    http.ListenAndServe(":8081", nil)
 	}
 }

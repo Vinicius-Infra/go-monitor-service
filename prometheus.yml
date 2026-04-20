@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s # O Prometheus buscará métricas a cada 15 segundos
+
+scrape_configs:
+  - job_name: 'go-monitor-service'
+    static_configs:
+      - targets: ['host.docker.internal:8081'] # Endereço da sua API Go rodando no Windows
