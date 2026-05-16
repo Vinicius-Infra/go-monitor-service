@@ -3,30 +3,34 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"time" // Nova peça: serve para o robô esperar um pouco entre as rondas
+	"net/http"
+	"time"
+
 	_ "github.com/lib/pq"
+<<<<<<< Updated upstream
 	"net/http"
     "github.com/prometheus/client_golang/prometheus/promhttp"
+=======
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+>>>>>>> Stashed changes
 )
 
 func checkDatabase(serviceName string, port int) {
-	// 1. Definimos variáveis vazias
 	var user, password, dbname string
 
-	// 2. Escolhemos os dados certos baseados na porta
 	if port == 5433 {
 		user = "postgres"
 		password = "postgres"
 		dbname = "microservicesdb"
 	} else {
-		// DADOS DA KOTLIN (Baseado no seu application.yml)
 		user = "demo"
 		password = "demo123"
 		dbname = "demo_db"
 	}
 
-	// 3. Montamos a string de conexão com os dados corretos
-	connStr := fmt.Sprintf("host=localhost port=%d user=%s password=%s dbname=%s sslmode=disable", 
+	// Como o Go rodará DENTRO do Docker agora, usamos host.docker.internal 
+	// para apontar para os bancos mapeados no seu localhost do Windows
+	connStr := fmt.Sprintf("host=host.docker.internal port=%d user=%s password=%s dbname=%s sslmode=disable", 
 		port, user, password, dbname)
 
 	db, err := sql.Open("postgres", connStr)
@@ -44,29 +48,25 @@ func checkDatabase(serviceName string, port int) {
 	}
 }
 
-// Função auxiliar para saber qual banco conectar baseado na porta
-func getDBName(port int) string {
-	if port == 5433 {
-		return "microservicesdb" // Banco da Java
-	}
-	return "demo_db" // Banco da Kotlin
-}
-
 func main() {
 	fmt.Println("🚀 Iniciando Monitor de Infraestrutura (Go)...")
 	fmt.Println("----------------------------------------------")
 
-	// Criamos um loop infinito (o vigia nunca dorme!)
+	// 1. Cria o servidor HTTP para o Prometheus em background (Goroutine)
+	// Isso permite que o endpoint /metrics fique ouvindo na porta 8081
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		fmt.Println("📊 Endpoint de métricas ativo em http://localhost:8081/metrics")
+		if err := http.ListenAndServe(":8081", nil); err != nil {
+			fmt.Printf("❌ Erro ao iniciar servidor de métricas: %v\n", err)
+		}
+	}()
+
+	// 2. Loop principal do Monitor (Vigia)
 	for {
-		// Checa o banco da Java
 		checkDatabase("API JAVA (Audit)", 5433)
-
-		// Checa o banco da Kotlin
 		checkDatabase("API KOTLIN (User)", 5434)
-
 		fmt.Println("----------------------------------------------")
-		
-		// Espera 10 segundos antes da próxima ronda
 		time.Sleep(10 * time.Second)
 
 		// Rota padrão do Prometheus

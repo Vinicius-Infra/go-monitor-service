@@ -3,7 +3,12 @@ services:
     build: .
     container_name: go_monitor_container
     restart: always
+<<<<<<< Updated upstream
     network_mode: "host" # Isso permite que o Go veja o 'localhost' do Windows
+=======
+    ports:
+      - "8081:8081" # Mapeia explicitamente a porta para o Windows e para a rede interna
+>>>>>>> Stashed changes
 
   prometheus:
     image: prom/prometheus
@@ -11,4 +16,21 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
+<<<<<<< Updated upstream
       - "9090:9090"
+=======
+      - "9090:9090"
+    depends_on:
+      - go-monitor
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: always
+    depends_on:
+      - prometheus
+>>>>>>> Stashed changes

@@ -1,5 +1,5 @@
 # Passo 1: Pegar uma cozinha emprestada (Imagem do Go) para compilar o código
-FROM golang:1.26-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
 # Passo 2: Definir a pasta de trabalho dentro da cozinha
 WORKDIR /app
